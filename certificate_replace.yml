@@ -3,7 +3,7 @@
 - name: "Get Letsencrypt Certificate and Split into RSA formatted types"
   hosts: LB
   gather_facts: false
-  vars_file: 
+  vars_files:
     - /certautomation/vault/vault.yml
   roles:
     - roles/General/split_pfx
