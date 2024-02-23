@@ -1,0 +1,43 @@
+---
+
+- name: Concat Name and path
+  ansible.builtin.set_fact: 
+    key_file_rsa: "{{ tmp_dir }}{{ pfx_file_name.stdout[:-4] }}-rsa.key"
+    key_file: "{{ tmp_dir }}{{ pfx_file_name.stdout[:-4] }}.key"
+    cert_file: "{{ tmp_dir }}{{ pfx_file_name.stdout[:-4] }}.crt"
+  delegate_to: localhost
+
+- name: SSL Certificate Upload
+  f5networks.f5_modules.bigip_ssl_certificate:
+    provider: "{{ provider }}"
+    name: "{{ Certificate_Name }}"
+    content: "{{ lookup('file', cert_file) }}"
+  delegate_to: localhost
+
+- name: SSL Key Upload
+  f5networks.f5_modules.bigip_ssl_key:
+    provider: "{{ provider }}"
+    name: "{{ Certificate_Name }}"
+    content: "{{ lookup('file', key_file) }}"
+  when: 
+    - is_rsa|bool == false
+  delegate_to: localhost
+
+- name: SSL Key Upload RSA
+  f5networks.f5_modules.bigip_ssl_key:
+    provider: "{{ provider }}"
+    name: "{{ Certificate_Name }}"
+    content: "{{ lookup('file', key_file_rsa) }}"
+  when: 
+    - is_rsa|bool == true
+  delegate_to: localhost
+
+- name: Create a client SSL profile with a cert/key/chain setting
+  f5networks.f5_modules.bigip_profile_client_ssl:
+    provider: "{{ provider }}"
+    state: present
+    name: "{{ Certificate_Name }}_ClientSSL_profile"
+    cert_key_chain:
+      - cert: "{{ Certificate_Name }}"
+        key: "{{ Certificate_Name }}"
+  delegate_to: localhost

@@ -31,7 +31,8 @@
   shell: "openssl rsa -in {{ tmp_dir }}{{ pfx_file_name.stdout [:-4] }}.key -out {{ tmp_dir }}{{ pfx_file_name.stdout [:-4] }}-rsa.key"
   register: pfx_key_change
   delegate_to: localhost
-
+  when: is_rsa | bool
+  
 # - debug: 
 #     var: pfx_key_change
 
