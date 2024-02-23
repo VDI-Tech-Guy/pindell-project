@@ -1,0 +1,3 @@
+---
+ - name: Upload and Upgrade F5 Array
+   include_tasks: upload_upgrade_f5.yml

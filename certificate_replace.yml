@@ -1,0 +1,14 @@
+---
+
+- name: "Get Letsencrypt Certificate and Split into RSA formatted types"
+  hosts: LB
+  gather_facts: false
+  vars: 
+    certbot_dir: "/certautomation/config/etc/letsencrypt/live/dsc-services.com/"
+    tmp_dir: "/tmp/cert_split/"
+    ansible_user: "admin"
+    ansible_password: "Ansible123!"
+    Certificate_Name: "DomainWildCard"
+  roles:
+    - roles/General/split_pfx
+    - roles/F5/upload_certificate

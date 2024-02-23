@@ -1,0 +1,44 @@
+---
+
+- name: "Retrieve last updated PFX File from the {{ certbot_dir }}"
+  shell: ls -fArt {{ certbot_dir }} | grep pfx | tail -n 1
+  register: pfx_file_name
+  delegate_to: localhost
+
+- name: "Create TMP Directory for Splitting of files"
+  ansible.builtin.file:
+    path: "{{ tmp_dir }}"
+    state: directory
+    mode: '0775'
+  delegate_to: localhost
+
+- name: "Copy Files from {{ certbot_dir }} location to {{ tmp_dir }}"
+  fetch:
+    flat: true
+    dest: "{{ tmp_dir }}"
+    src: "{{ certbot_dir }}{{ pfx_file_name.stdout }}"
+  delegate_to: localhost
+  
+- name: "Extract Key File from PFX Certificate with OpenSSL"
+  shell: "openssl pkcs12 -in {{ tmp_dir }}{{ pfx_file_name.stdout }} -out {{ tmp_dir }}{{ pfx_file_name.stdout [:-4] }}.key -nodes -nocerts -passin pass:"
+  register: pfx_key_split
+  delegate_to: localhost
+
+# - debug: 
+#     var: pfx_key_split
+
+- name: "Convert Key File from PEM Export to RSA with OpenSSL"
+  shell: "openssl rsa -in {{ tmp_dir }}{{ pfx_file_name.stdout [:-4] }}.key -out {{ tmp_dir }}{{ pfx_file_name.stdout [:-4] }}-rsa.key"
+  register: pfx_key_change
+  delegate_to: localhost
+
+# - debug: 
+#     var: pfx_key_change
+
+- name: "Extract Cert Files from PFX Certificate with OpenSSL"
+  shell: "openssl pkcs12 -in {{ tmp_dir }}{{ pfx_file_name.stdout }} -out {{ tmp_dir }}{{ pfx_file_name.stdout [:-4] }}.crt -nodes -nokeys -passin pass:"
+  register: pfx_cert_split
+  delegate_to: localhost
+
+# - debug: 
+#     var: pfx_cert_split
