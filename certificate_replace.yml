@@ -4,7 +4,7 @@
   hosts: LB
   gather_facts: false
   vars:
-    is_rsa: false
+    is_rsa: true
   vars_files:
     - /certautomation/vault/vault.yml
   roles:
